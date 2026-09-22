@@ -9,7 +9,17 @@ COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 # in userspace mode. Route SSH destinations on the tailnet through `tailscale
 # nc`; no SSH listener or Railway TCP proxy is exposed.
 RUN install -d /etc/ssh/ssh_config.d && printf '%s\n' \
+    'Host phil-office Phil-Office' \
+    '    HostName 100.85.87.1' \
+    '    User philavery' \
+    '    Port 22' \
+    '    IdentityFile /opt/data/ssh/hermes-cloud' \
+    '    IdentitiesOnly yes' \
+    '    StrictHostKeyChecking accept-new' \
+    '    ProxyCommand /usr/local/bin/tailscale --socket=/tmp/tailscaled.sock nc %h %p' \
     'Host 100.*' \
+    '    IdentityFile /opt/data/ssh/hermes-cloud' \
+    '    IdentitiesOnly yes' \
     '    ProxyCommand /usr/local/bin/tailscale --socket=/tmp/tailscaled.sock nc %h %p' \
     > /etc/ssh/ssh_config.d/99-tailscale.conf
 
