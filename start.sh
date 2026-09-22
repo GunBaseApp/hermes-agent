@@ -12,6 +12,24 @@ set -e
 # _PASSWORD (bundled dashboard_auth/basic plugin) or the dashboard fails closed
 # and takes the container down with it.
 
+# Join the tailnet without requiring a privileged TUN device. Keep Tailscale's
+# node identity on the existing /opt/data volume so restarts do not create a
+# new machine or consume another auth key. The auth key remains a Railway
+# variable and is never written into the image or repository.
+if [ -n "${TAILSCALE_AUTHKEY:-}" ]; then
+    mkdir -p /opt/data/tailscale
+    tailscaled --tun=userspace-networking --state=/opt/data/tailscale/tailscaled.state --socket=/tmp/tailscaled.sock >/tmp/tailscaled.log 2>&1 &
+
+    for _ in $(seq 1 30); do
+        [ -S /tmp/tailscaled.sock ] && break
+        sleep 1
+    done
+
+    tailscale --socket=/tmp/tailscaled.sock up --auth-key="${TAILSCALE_AUTHKEY}" --hostname=hermes-cloud --accept-dns=false
+else
+    echo "WARNING: TAILSCALE_AUTHKEY is not set; tailnet access is disabled" >&2
+fi
+
 # Establish the default gateway profile's durable "running" intent. This only
 # does real work on the first boot of a fresh volume: cont-init's profile
 # reconciler auto-starts profiles whose last desired_state was "running", but a
