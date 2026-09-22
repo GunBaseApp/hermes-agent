@@ -8,6 +8,7 @@ COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 # The Railway container cannot create a kernel TUN device, so tailscaled runs
 # in userspace mode. Route SSH destinations on the tailnet through `tailscale
 # nc`; no SSH listener or Railway TCP proxy is exposed.
+# The phil-office alias uses the dedicated key stored on /opt/data.
 RUN install -d /etc/ssh/ssh_config.d && printf '%s\n' \
     'Host phil-office Phil-Office' \
     '    HostName 100.85.87.1' \
