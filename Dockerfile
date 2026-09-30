@@ -1,6 +1,6 @@
 FROM tailscale/tailscale:stable AS tailscale
 
-FROM nousresearch/hermes-agent:v2026.8.3
+FROM nousresearch/hermes-agent:v2026.9.24
 
 COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscale
 COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
